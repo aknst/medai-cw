@@ -1,6 +1,5 @@
-# models.py
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -25,10 +24,12 @@ class User(SQLModel, table=True):
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
     patient_appointments: list["Appointment"] = Relationship(
-        back_populates="patient", sa_relationship_kwargs={"lazy": "select"}
+        back_populates="patient",
+        sa_relationship_kwargs={"foreign_keys": "[Appointment.patient_id]"},
     )
     doctor_appointments: list["Appointment"] = Relationship(
-        back_populates="doctor", sa_relationship_kwargs={"lazy": "select"}
+        back_populates="doctor",
+        sa_relationship_kwargs={"foreign_keys": "[Appointment.doctor_id]"},
     )
 
 
@@ -40,7 +41,7 @@ class Item(SQLModel, table=True):
     description: str | None = Field(default=None, max_length=255)
 
     owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+        foreign_key="users.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="items")
 
@@ -63,11 +64,19 @@ class Appointment(SQLModel, table=True):
 
     status: AppointmentStatus = Field(default=AppointmentStatus.pending)
 
-    patient_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    doctor_id: uuid.UUID | None = Field(foreign_key="user.id", default=None)
+    patient_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
+    doctor_id: uuid.UUID | None = Field(foreign_key="users.id", default=None)
 
-    patient: User | None = Relationship(back_populates="patient_appointments")
-    doctor: User | None = Relationship(back_populates="doctor_appointments")
+    patient: User = Relationship(
+        back_populates="patient_appointments",
+        sa_relationship_kwargs={"foreign_keys": "[Appointment.patient_id]"},
+    )
+    doctor: User | None = Relationship(
+        back_populates="doctor_appointments",
+        sa_relationship_kwargs={"foreign_keys": "[Appointment.doctor_id]"},
+    )
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default=datetime.now(timezone.utc), nullable=False)
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
