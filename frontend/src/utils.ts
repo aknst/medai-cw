@@ -3,24 +3,24 @@ import useCustomToast from "./hooks/useCustomToast"
 
 export const emailPattern = {
   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-  message: "Invalid email address",
+  message: "Недопустимый email",
 }
 
 export const namePattern = {
   value: /^[A-Za-z\s\u00C0-\u017F]{1,30}$/,
-  message: "Invalid name",
+  message: "Недопустимое имя",
 }
 
 export const passwordRules = (isRequired = true) => {
   const rules: any = {
     minLength: {
       value: 8,
-      message: "Password must be at least 8 characters",
+      message: "Пароль должен содержать не менее 8 символов",
     },
   }
 
   if (isRequired) {
-    rules.required = "Password is required"
+    rules.required = "Требуется пароль"
   }
 
   return rules
@@ -33,12 +33,12 @@ export const confirmPasswordRules = (
   const rules: any = {
     validate: (value: string) => {
       const password = getValues().password || getValues().new_password
-      return value === password ? true : "The passwords do not match"
+      return value === password ? true : "Пароли не совпадают"
     },
   }
 
   if (isRequired) {
-    rules.required = "Password confirmation is required"
+    rules.required = "Требуется подтверждение пароля"
   }
 
   return rules

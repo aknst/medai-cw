@@ -13,7 +13,7 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import Logo from "/assets/images/fastapi-logo.svg"
+import Logo from "/assets/images/logo.svg"
 import { emailPattern, passwordRules } from "../utils"
 
 export const Route = createFileRoute("/login")({
@@ -82,7 +82,7 @@ function Login() {
             <Input
               id="username"
               {...register("username", {
-                required: "Username is required",
+                required: "Требуется логин",
                 pattern: emailPattern,
               })}
               placeholder="Email"
@@ -94,19 +94,19 @@ function Login() {
           type="password"
           startElement={<FiLock />}
           {...register("password", passwordRules())}
-          placeholder="Password"
+          placeholder="Пароль"
           errors={errors}
         />
         <RouterLink to="/recover-password" className="main-link">
-          Forgot Password?
+          Забыли пароль?
         </RouterLink>
         <Button variant="solid" type="submit" loading={isSubmitting} size="md">
-          Log In
+          Войти
         </Button>
         <Text>
-          Don't have an account?{" "}
+          Нет аккаунта?{" "}
           <RouterLink to="/signup" className="main-link">
-            Sign Up
+            Зарегистрироваться
           </RouterLink>
         </Text>
       </Container>

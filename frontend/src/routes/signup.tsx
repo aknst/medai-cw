@@ -14,7 +14,7 @@ import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "@/utils"
-import Logo from "/assets/images/fastapi-logo.svg"
+import Logo from "/assets/images/logo.svg"
 
 export const Route = createFileRoute("/signup")({
   component: SignUp,
@@ -83,9 +83,9 @@ function SignUp() {
                 id="full_name"
                 minLength={3}
                 {...register("full_name", {
-                  required: "Full Name is required",
+                  required: "Требуется полное имя",
                 })}
-                placeholder="Full Name"
+                placeholder="ФИО"
                 type="text"
               />
             </InputGroup>
@@ -96,7 +96,7 @@ function SignUp() {
               <Input
                 id="email"
                 {...register("email", {
-                  required: "Email is required",
+                  required: "Требуется почта",
                   pattern: emailPattern,
                 })}
                 placeholder="Email"
@@ -108,23 +108,23 @@ function SignUp() {
             type="password"
             startElement={<FiLock />}
             {...register("password", passwordRules())}
-            placeholder="Password"
+            placeholder="Пароль"
             errors={errors}
           />
           <PasswordInput
             type="confirm_password"
             startElement={<FiLock />}
             {...register("confirm_password", confirmPasswordRules(getValues))}
-            placeholder="Confirm Password"
+            placeholder="Подтверждение пароля"
             errors={errors}
           />
           <Button variant="solid" type="submit" loading={isSubmitting}>
-            Sign Up
+            Зарегистрироваться
           </Button>
           <Text>
-            Already have an account?{" "}
+            Уже есть аккаунт?{" "}
             <RouterLink to="/login" className="main-link">
-              Log In
+              Войти
             </RouterLink>
           </Text>
         </Container>
