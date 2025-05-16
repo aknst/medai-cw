@@ -2,7 +2,7 @@ from sqlmodel import Session, create_engine, select
 
 from app import crud
 from app.core.config import settings
-from app.models import User
+from app.models import User, UserRole
 from app.schemas import UserCreate
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
@@ -22,13 +22,37 @@ def init_db(session: Session) -> None:
     # This works because the models are already imported and registered from app.models
     SQLModel.metadata.create_all(engine)
 
-    user = session.exec(
+    # Create superuser if not exists
+    superuser = session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)
     ).first()
-    if not user:
+    if not superuser:
         user_in = UserCreate(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,
+            role=UserRole.patient,
         )
-        user = crud.create_user(session=session, user_create=user_in)
+        crud.create_user(session=session, user_create=user_in)
+
+    # Create patient user if not exists
+    patient = session.exec(select(User).where(User.email == "patient@e.com")).first()
+    if not patient:
+        patient_in = UserCreate(
+            email="patient@e.com",
+            password="patient@e.com",
+            is_superuser=False,
+            role=UserRole.patient,
+        )
+        crud.create_user(session=session, user_create=patient_in)
+
+    # Create doctor user if not exists
+    doctor = session.exec(select(User).where(User.email == "doctor@e.com")).first()
+    if not doctor:
+        doctor_in = UserCreate(
+            email="doctor@e.com",
+            password="doctor@e.com",
+            is_superuser=False,
+            role=UserRole.doctor,
+        )
+        crud.create_user(session=session, user_create=doctor_in)
