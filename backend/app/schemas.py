@@ -1,11 +1,10 @@
 import uuid
 from datetime import datetime
-from enum import Enum as PyEnum
 
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
-from app.models import UserRole
+from app.models import AppointmentStatus, UserRole
 
 # ————— User schemas —————
 
@@ -81,12 +80,6 @@ class ItemsPublic(SQLModel):
 # ————— Appointment schemas —————
 
 
-class AppointmentStatus(str, PyEnum):
-    pending = "В ожидании"
-    completed = "Завершен"
-    cancelled = "Отменен"
-
-
 class AppointmentBase(SQLModel):
     complaints: str | None = None
     doctor_diagnosis: str | None = None
@@ -96,8 +89,22 @@ class AppointmentBase(SQLModel):
     status: AppointmentStatus = Field(default=AppointmentStatus.pending)
 
 
-class AppointmentCreate(AppointmentBase):
-    complaints: str = Field(..., min_length=1)
+class AppointmentCreatePatient(SQLModel):
+    complaints: str = Field(..., min_length=1, description="Жалобы пациента")
+    doctor_id: uuid.UUID = Field(default=None, description="(необязательно) UUID врача")
+
+
+class AppointmentCreateDoctor(SQLModel):
+    patient_id: uuid.UUID = Field(..., description="UUID пациента")
+    complaints: str | None = Field(default=None, description="Жалобы пациента")
+    doctor_diagnosis: str | None = Field(default=None, description="Диагноз врача")
+    doctor_recommendations: str | None = Field(
+        default=None, description="Рекомендации врача"
+    )
+    nlp_diagnosis: str | None = Field(default=None, description="Диагноз от NLP")
+    nlp_recommendations: str | None = Field(
+        default=None, description="Рекомендации от NLP"
+    )
 
 
 class AppointmentUpdate(SQLModel):
