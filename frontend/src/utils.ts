@@ -53,3 +53,54 @@ export const handleError = (err: ApiError) => {
   }
   showErrorToast(errorMessage)
 }
+
+export const birthDateRules = (isRequired = true) => {
+  const rules: any = {
+    pattern: {
+      value: /^\d{4}\-\d{2}\-\d{2}$/,
+      message: "Формат даты: YYYY-MM-DD",
+    },
+    validate: (value: string | null | undefined) => {
+      if (!isRequired && (!value || value.trim() === "")) {
+        return true
+      }
+
+      const isValidFormat = value && /^\d{4}\-\d{2}\-\d{2}$/.test(value)
+      if (!isValidFormat) {
+        return "Неверный формат даты"
+      }
+
+      const [day, month, year] = value.split(".")
+      const parsedDate = new Date(`${year}-${month}-${day}`)
+
+      if (parsedDate.toString() === "Invalid Date") {
+        return "Неверная дата"
+      }
+
+      if (parsedDate > new Date()) {
+        return "Дата рождения не может быть в будущем"
+      }
+
+      return true
+    },
+  }
+
+  if (isRequired) {
+    rules.required = "Требуется указать дату рождения"
+  }
+
+  return rules
+}
+
+export const formatDateTime = (dateString: string | Date): string => {
+  const date = new Date(dateString)
+
+  return date.toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+}
