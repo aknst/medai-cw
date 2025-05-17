@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from enum import Enum as PyEnum
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -20,6 +20,7 @@ class User(SQLModel, table=True):
     is_superuser: bool = False
     role: UserRole = Field(default=UserRole.patient)
     full_name: str | None = Field(default=None, max_length=255)
+    birth_date: date | None = None
 
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
@@ -67,7 +68,7 @@ class Appointment(SQLModel, table=True):
     patient_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
     doctor_id: uuid.UUID | None = Field(foreign_key="users.id", default=None)
 
-    patient: User = Relationship(
+    patient: User | None = Relationship(
         back_populates="patient_appointments",
         sa_relationship_kwargs={"foreign_keys": "[Appointment.patient_id]"},
     )

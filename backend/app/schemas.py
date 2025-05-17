@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
@@ -15,6 +15,7 @@ class UserBase(SQLModel):
     is_superuser: bool = False
     role: UserRole = Field(default=UserRole.patient)
     full_name: str | None = Field(default=None, max_length=255)
+    birth_date: date | None = None
 
 
 class UserCreate(UserBase):
@@ -25,6 +26,7 @@ class UserRegister(SQLModel):
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=40)
     full_name: str | None = Field(default=None, max_length=255)
+    birth_date: date | None
 
 
 class UserUpdate(UserBase):
@@ -35,6 +37,7 @@ class UserUpdate(UserBase):
 class UserUpdateMe(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
     email: EmailStr | None = Field(default=None, max_length=255)
+    birth_date: date | None = None
 
 
 class UpdatePassword(SQLModel):
@@ -116,12 +119,22 @@ class AppointmentUpdate(SQLModel):
     status: AppointmentStatus | None = None
 
 
+class AppointmentUser(SQLModel):
+    id: uuid.UUID
+    full_name: str | None
+    email: str
+    birth_date: date | None
+
+
 class AppointmentPublic(AppointmentBase):
     id: uuid.UUID
     patient_id: uuid.UUID
     doctor_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
+
+    patient: AppointmentUser | None
+    doctor: AppointmentUser | None
 
 
 class AppointmentsPublic(SQLModel):
