@@ -1,8 +1,8 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlmodel import String, cast, col, delete, func, or_, select
 
 from app import crud
 from app.api.deps import (
@@ -33,19 +33,45 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_users(
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
+    search: str | None = Query(default=None, description="Search by name or email"),
+) -> Any:
     """
-    Retrieve users.
+    Retrieve users with role-based filtering and optional search.
+    - Patients see only doctors
+    - Doctors see only patients
+    - Superusers see all
+    - Search by full_name or email (case-insensitive)
     """
+    if current_user.is_superuser:
+        base_query = select(User)
+    else:
+        if current_user.role == "patient":
+            base_query = select(User).where(User.role == "doctor")
+        elif current_user.role == "doctor":
+            base_query = select(User).where(User.role == "patient")
+        else:
+            base_query = select(User).where(False)
 
-    count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
+    if search:
+        search_pattern = f"%{search}%"
+        base_query = base_query.where(
+            or_(
+                cast(User.id, String).ilike(search_pattern),
+                User.full_name.ilike(search_pattern),
+                User.email.ilike(search_pattern),
+            )
+        )
 
-    statement = select(User).offset(skip).limit(limit)
-    users = session.exec(statement).all()
+    count = session.exec(select(func.count()).select_from(base_query.subquery())).one()
+
+    users = session.exec(base_query.offset(skip).limit(limit)).all()
 
     return UsersPublic(data=users, count=count)
 
