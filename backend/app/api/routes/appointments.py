@@ -164,9 +164,7 @@ def create_appointment_doctor(
     - статус сразу 'Завершен'
     """
     if current_user.role != "doctor" and not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403, detail="Only doctors can create appointments here"
-        )
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     appointment = Appointment(
         patient_id=appointment_in.patient_id,
@@ -205,7 +203,7 @@ def update_appointment(
             appointment.doctor_id is not None
             and appointment.doctor_id != current_user.id
         ):
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise HTTPException(status_code=400, detail="Not enough permissions")
 
     data = appointment_in.model_dump(exclude_unset=True)
     appointment.sqlmodel_update(data)
@@ -231,7 +229,7 @@ def delete_appointment(
 
     if not current_user.is_superuser:
         if appointment.patient_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise HTTPException(status_code=400, detail="Not enough permissions")
 
     session.delete(appointment)
     session.commit()
