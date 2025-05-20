@@ -46,7 +46,7 @@ export type AppointmentPublic = {
     nlp_diagnosis?: (string | null);
     status?: AppointmentStatus;
     id: string;
-    patient_id: string;
+    patient_id: (string | null);
     doctor_id: (string | null);
     created_at: string;
     updated_at: string;
@@ -75,6 +75,7 @@ export type AppointmentUser = {
     full_name: (string | null);
     email: string;
     birth_date: (string | null);
+    gender: (UserGender | null);
 };
 
 export type Body_login_login_access_token = {
@@ -90,26 +91,15 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type ItemCreate = {
-    title: string;
-    description?: (string | null);
+export type InferenceRequest = {
+    gender: UserGender;
+    age: number;
+    complaints: string;
 };
 
-export type ItemPublic = {
-    title: string;
-    description?: (string | null);
-    id: string;
-    owner_id: string;
-};
-
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
-    count: number;
-};
-
-export type ItemUpdate = {
-    title?: (string | null);
-    description?: (string | null);
+export type InferenceResponse = {
+    diagnosis: string;
+    recommendations: string;
 };
 
 export type Message = {
@@ -143,16 +133,20 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     role?: UserRole;
+    gender?: UserGender;
     full_name?: (string | null);
     birth_date?: (string | null);
     password: string;
 };
+
+export type UserGender = 'male' | 'female';
 
 export type UserPublic = {
     email: string;
     is_active?: boolean;
     is_superuser?: boolean;
     role?: UserRole;
+    gender?: UserGender;
     full_name?: (string | null);
     birth_date?: (string | null);
     id: string;
@@ -163,6 +157,7 @@ export type UserRegister = {
     password: string;
     full_name?: (string | null);
     birth_date: (string | null);
+    gender?: UserGender;
 };
 
 export type UserRole = 'patient' | 'doctor';
@@ -177,6 +172,7 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     role?: UserRole;
+    gender?: UserGender;
     full_name?: (string | null);
     birth_date?: (string | null);
     password?: (string | null);
@@ -186,6 +182,7 @@ export type UserUpdateMe = {
     full_name?: (string | null);
     email?: (string | null);
     birth_date?: (string | null);
+    gender?: (UserGender | null);
 };
 
 export type ValidationError = {
@@ -240,37 +237,11 @@ export type AppointmentsCreateAppointmentDoctorData = {
 
 export type AppointmentsCreateAppointmentDoctorResponse = (AppointmentPublic);
 
-export type ItemsReadItemsData = {
-    limit?: number;
-    skip?: number;
+export type InferenceRunInferenceData = {
+    requestBody: InferenceRequest;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
-
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
-};
-
-export type ItemsCreateItemResponse = (ItemPublic);
-
-export type ItemsReadItemData = {
-    id: string;
-};
-
-export type ItemsReadItemResponse = (ItemPublic);
-
-export type ItemsUpdateItemData = {
-    id: string;
-    requestBody: ItemUpdate;
-};
-
-export type ItemsUpdateItemResponse = (ItemPublic);
-
-export type ItemsDeleteItemData = {
-    id: string;
-};
-
-export type ItemsDeleteItemResponse = (Message);
+export type InferenceRunInferenceResponse = (InferenceResponse);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
