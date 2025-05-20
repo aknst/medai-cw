@@ -193,20 +193,74 @@ def update_appointment(
     """
     Doctor updates an appointment (fills NLP fields, diagnosis, recommendations,
     changes status to Завершен or Отменен).
+
+    Patient can update only their own pending appointments:
+      - complaints
+      - doctor_id
+      - status → cancelled
     """
     appointment = session.get(Appointment, appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
 
-    if not current_user.is_superuser:
-        if current_user.role != "doctor" or (
-            appointment.doctor_id is not None
-            and appointment.doctor_id != current_user.id
+    # --- ВЕТКА: ВРАЧ или СУПЕРПОЛЬЗОВАТЕЛЬ ---
+    if current_user.is_superuser or current_user.role == "doctor":
+        # если врач, только свои записи
+        if not current_user.is_superuser and appointment.doctor_id not in (
+            None,
+            current_user.id,
         ):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+            raise HTTPException(status_code=403, detail="Нет прав на редактирование")
+        # Разрешаем править любые поля из AppointmentUpdate
+        data = appointment_in.model_dump(exclude_unset=True)
+        # Смена статуса у врача только на completed или cancelled
+        if "status" in data:
+            new_status = data["status"]
+            if new_status not in (
+                AppointmentStatus.completed,
+                AppointmentStatus.cancelled,
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Врач может ставить только статус 'Завершен' или 'Отменен'",
+                )
+        else:
+            data["status"] = AppointmentStatus.completed
+        appointment.sqlmodel_update(data)
 
-    data = appointment_in.model_dump(exclude_unset=True)
-    appointment.sqlmodel_update(data)
+    elif current_user.role == "patient":
+        if appointment.patient_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Нет прав на редактирование")
+        if appointment.status is not AppointmentStatus.pending:
+            raise HTTPException(
+                status_code=400,
+                detail="Пациент может редактировать только заявки в статусе 'В ожидании'",
+            )
+
+        allowed = {}
+        incoming = appointment_in.model_dump(exclude_unset=True)
+
+        # Жалобы
+        if "complaints" in incoming:
+            allowed["complaints"] = incoming["complaints"]
+        # Смена врача
+        if "doctor_id" in incoming:
+            allowed["doctor_id"] = incoming["doctor_id"]
+        # Отмена приёма
+        if incoming.get("status") == AppointmentStatus.cancelled:
+            allowed["status"] = AppointmentStatus.cancelled
+
+        if not allowed:
+            raise HTTPException(
+                status_code=400,
+                detail="Нет полей для обновления или они недоступны",
+            )
+
+        appointment.sqlmodel_update(allowed)
+
+    else:
+        raise HTTPException(status_code=403, detail="Нет прав на редактирование")
+
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
