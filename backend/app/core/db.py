@@ -28,31 +28,38 @@ def init_db(session: Session) -> None:
     ).first()
     if not superuser:
         user_in = UserCreate(
+            full_name="Администратор",
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,
+            birth_date="2004-05-23",
             role=UserRole.patient,
         )
         crud.create_user(session=session, user_create=user_in)
 
     # Create patient user if not exists
-    patient = session.exec(select(User).where(User.email == "patient@e.com")).first()
+    patient = session.exec(
+        select(User).where(User.email == "patient@gmail.com")
+    ).first()
     if not patient:
         patient_in = UserCreate(
-            email="patient@e.com",
-            password="patient@e.com",
+            full_name="Пациент",
+            email="patient@gmail.com",
+            password="patient@gmail.com",
             is_superuser=False,
+            birth_date="2004-05-23",
             role=UserRole.patient,
         )
         crud.create_user(session=session, user_create=patient_in)
 
     # Create doctor user if not exists
-    doctor = session.exec(select(User).where(User.email == "doctor@e.com")).first()
+    doctor = session.exec(select(User).where(User.email == "doctor@gmail.com")).first()
     if not doctor:
         doctor_in = UserCreate(
-            email="doctor@e.com",
-            password="doctor@e.com",
+            email="doctor@gmail.com",
+            password="doctor@gmail.com",
             is_superuser=False,
+            birth_date="2004-05-23",
             role=UserRole.doctor,
         )
         crud.create_user(session=session, user_create=doctor_in)
