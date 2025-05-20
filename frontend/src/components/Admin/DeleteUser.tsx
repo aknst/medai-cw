@@ -33,11 +33,11 @@ const DeleteUser = ({ id }: { id: string }) => {
   const mutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      showSuccessToast("The user was deleted successfully")
+      showSuccessToast("Пользователь был успешно удален")
       setIsOpen(false)
     },
     onError: () => {
-      showErrorToast("An error occurred while deleting the user")
+      showErrorToast("При удалении пользователя произошла ошибка")
     },
     onSettled: () => {
       queryClient.invalidateQueries()
@@ -45,7 +45,7 @@ const DeleteUser = ({ id }: { id: string }) => {
   })
 
   const onSubmit = async () => {
-    mutation.mutate(id)
+    await mutation.mutateAsync(id)
   }
 
   return (
@@ -59,7 +59,7 @@ const DeleteUser = ({ id }: { id: string }) => {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" colorPalette="red">
           <FiTrash2 fontSize="16px" />
-          Delete User
+          Удалить
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -69,9 +69,9 @@ const DeleteUser = ({ id }: { id: string }) => {
           </DialogHeader>
           <DialogBody>
             <Text mb={4}>
-              All items associated with this user will also be{" "}
-              <strong>permanently deleted.</strong> Are you sure? You will not
-              be able to undo this action.
+              Все данные, связанные с этим пользователем, также будут{" "}
+              <strong>удалены безвозвратно.</strong> Вы уверены? Вы не сможете
+              отменить это действие.
             </Text>
           </DialogBody>
 
@@ -82,7 +82,7 @@ const DeleteUser = ({ id }: { id: string }) => {
                 colorPalette="gray"
                 disabled={isSubmitting}
               >
-                Cancel
+                Отмена
               </Button>
             </DialogActionTrigger>
             <Button
@@ -91,7 +91,7 @@ const DeleteUser = ({ id }: { id: string }) => {
               type="submit"
               loading={isSubmitting}
             >
-              Delete
+              Удалить
             </Button>
           </DialogFooter>
           <DialogCloseTrigger />

@@ -7,6 +7,7 @@ import {
   DialogRoot,
   DialogTrigger,
   Flex,
+  HStack,
   Input,
   Text,
   VStack,
@@ -17,7 +18,7 @@ import { FaExchangeAlt } from "react-icons/fa"
 import { type UserPublic, type UserUpdate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { birthDateRules, emailPattern, handleError } from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
@@ -28,6 +29,8 @@ import {
   DialogTitle,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import { Select } from "../ui/select"
+import useAuth from "@/hooks/useAuth"
 
 interface EditUserProps {
   user: UserPublic
@@ -40,6 +43,7 @@ interface UserUpdateForm extends UserUpdate {
 const EditUser = ({ user }: EditUserProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const { showSuccessToast } = useCustomToast()
   const {
     control,
@@ -58,7 +62,7 @@ const EditUser = ({ user }: EditUserProps) => {
     mutationFn: (data: UserUpdateForm) =>
       UsersService.updateUser({ userId: user.id, requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User updated successfully.")
+      showSuccessToast("Пользователь успешно обновлен.")
       reset()
       setIsOpen(false)
     },
@@ -74,7 +78,7 @@ const EditUser = ({ user }: EditUserProps) => {
     if (data.password === "") {
       data.password = undefined
     }
-    mutation.mutate(data)
+    await mutation.mutateAsync(data)
   }
 
   return (
@@ -87,16 +91,18 @@ const EditUser = ({ user }: EditUserProps) => {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm">
           <FaExchangeAlt fontSize="16px" />
-          Edit User
+          Изменить
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>Изменение пользователя</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <Text mb={4}>Update the user details below.</Text>
+            <Text mb={4}>
+              Обновите информацию о пользователе, приведенную ниже.
+            </Text>
             <VStack gap={4}>
               <Field
                 required
@@ -118,20 +124,56 @@ const EditUser = ({ user }: EditUserProps) => {
               <Field
                 invalid={!!errors.full_name}
                 errorText={errors.full_name?.message}
-                label="Full Name"
+                label="ФИО"
               >
                 <Input
                   id="name"
                   {...register("full_name")}
-                  placeholder="Full name"
+                  placeholder="Полное имя"
                   type="text"
                 />
               </Field>
+              <HStack gap={4} w="full" alignItems="baseline">
+                <Field
+                  invalid={!!errors.role}
+                  errorText={errors.role?.message}
+                  label="Роль"
+                >
+                  <Select
+                    placeholder="Выберите роль"
+                    options={
+                      currentUser?.is_superuser
+                        ? [
+                            { label: "Пациент", value: "patient" },
+                            { label: "Врач", value: "doctor" },
+                          ]
+                        : currentUser?.role === "doctor"
+                          ? [{ label: "Пациент", value: "patient" }]
+                          : []
+                    }
+                    size="md"
+                    width="full"
+                    {...register("role")}
+                  />
+                </Field>
+                <Field
+                  label="Дата рождения"
+                  invalid={!!errors.birth_date}
+                  errorText={errors.birth_date?.message}
+                >
+                  <Input
+                    id="birth_date"
+                    type="text"
+                    placeholder="Дата рождения"
+                    {...register("birth_date", birthDateRules())}
+                  />
+                </Field>
+              </HStack>
 
               <Field
                 invalid={!!errors.password}
                 errorText={errors.password?.message}
-                label="Set Password"
+                label="Установить пароль"
               >
                 <Input
                   id="password"
@@ -141,7 +183,7 @@ const EditUser = ({ user }: EditUserProps) => {
                       message: "Password must be at least 8 characters",
                     },
                   })}
-                  placeholder="Password"
+                  placeholder="Пароль"
                   type="password"
                 />
               </Field>
@@ -149,36 +191,39 @@ const EditUser = ({ user }: EditUserProps) => {
               <Field
                 invalid={!!errors.confirm_password}
                 errorText={errors.confirm_password?.message}
-                label="Confirm Password"
+                label="Подтвердить пароль"
               >
                 <Input
                   id="confirm_password"
                   {...register("confirm_password", {
                     validate: (value) =>
-                      value === getValues().password ||
-                      "The passwords do not match",
+                      value === getValues().password || "Пароли не совпадают",
                   })}
-                  placeholder="Password"
+                  placeholder="Подтверждение пароля"
                   type="password"
                 />
               </Field>
             </VStack>
 
             <Flex mt={4} direction="column" gap={4}>
-              <Controller
-                control={control}
-                name="is_superuser"
-                render={({ field }) => (
-                  <Field disabled={field.disabled} colorPalette="teal">
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={({ checked }) => field.onChange(checked)}
-                    >
-                      Is superuser?
-                    </Checkbox>
-                  </Field>
-                )}
-              />
+              {currentUser?.is_superuser && (
+                <Controller
+                  control={control}
+                  name="is_superuser"
+                  render={({ field }) => (
+                    <Field disabled={field.disabled} colorPalette="teal">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={({ checked }) =>
+                          field.onChange(checked)
+                        }
+                      >
+                        Является админом?
+                      </Checkbox>
+                    </Field>
+                  )}
+                />
+              )}
               <Controller
                 control={control}
                 name="is_active"
@@ -188,7 +233,7 @@ const EditUser = ({ user }: EditUserProps) => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is active?
+                      Активный?
                     </Checkbox>
                   </Field>
                 )}
@@ -203,11 +248,11 @@ const EditUser = ({ user }: EditUserProps) => {
                 colorPalette="gray"
                 disabled={isSubmitting}
               >
-                Cancel
+                Отмена
               </Button>
             </DialogActionTrigger>
             <Button variant="solid" type="submit" loading={isSubmitting}>
-              Save
+              Сохранить
             </Button>
           </DialogFooter>
           <DialogCloseTrigger />

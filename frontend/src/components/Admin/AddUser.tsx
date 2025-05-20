@@ -4,12 +4,13 @@ import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { type UserCreate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { birthDateRules, emailPattern, handleError } from "@/utils"
 import {
   Button,
   DialogActionTrigger,
   DialogTitle,
   Flex,
+  HStack,
   Input,
   Text,
   VStack,
@@ -27,6 +28,8 @@ import {
   DialogTrigger,
 } from "../ui/dialog"
 import { Field } from "../ui/field"
+import useAuth from "@/hooks/useAuth"
+import { Select } from "../ui/select"
 
 interface UserCreateForm extends UserCreate {
   confirm_password: string
@@ -35,7 +38,10 @@ interface UserCreateForm extends UserCreate {
 const AddUser = () => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const { showSuccessToast } = useCustomToast()
+  // const [isSubmitting, setIsSubmitting] = useState(false)
+
   const {
     control,
     register,
@@ -52,7 +58,8 @@ const AddUser = () => {
       password: "",
       confirm_password: "",
       is_superuser: false,
-      is_active: false,
+      is_active: true,
+      gender: "male",
     },
   })
 
@@ -60,7 +67,7 @@ const AddUser = () => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User created successfully.")
+      showSuccessToast("Пользователь успешно добавлен.")
       reset()
       setIsOpen(false)
     },
@@ -72,8 +79,8 @@ const AddUser = () => {
     },
   })
 
-  const onSubmit: SubmitHandler<UserCreateForm> = (data) => {
-    mutation.mutate(data)
+  const onSubmit: SubmitHandler<UserCreateForm> = async (data) => {
+    await mutation.mutateAsync(data)
   }
 
   return (
@@ -86,17 +93,18 @@ const AddUser = () => {
       <DialogTrigger asChild>
         <Button value="add-user" my={4}>
           <FaPlus fontSize="16px" />
-          Add User
+          Добавить пользователя
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Add User</DialogTitle>
+            <DialogTitle>Добавить пользователя</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <Text mb={4}>
-              Fill in the form below to add a new user to the system.
+              Заполните форму ниже, чтобы добавить нового пользователя в
+              систему.
             </Text>
             <VStack gap={4}>
               <Field
@@ -108,7 +116,7 @@ const AddUser = () => {
                 <Input
                   id="email"
                   {...register("email", {
-                    required: "Email is required",
+                    required: "Требуется email",
                     pattern: emailPattern,
                   })}
                   placeholder="Email"
@@ -119,13 +127,67 @@ const AddUser = () => {
               <Field
                 invalid={!!errors.full_name}
                 errorText={errors.full_name?.message}
-                label="Full Name"
+                label="ФИО"
               >
                 <Input
                   id="name"
                   {...register("full_name")}
-                  placeholder="Full name"
+                  placeholder="ФИО"
                   type="text"
+                />
+              </Field>
+
+              <HStack gap={4} w="full" alignItems="baseline">
+                <Field
+                  invalid={!!errors.role}
+                  errorText={errors.role?.message}
+                  label="Роль"
+                >
+                  <Select
+                    placeholder="Выберите роль"
+                    options={
+                      currentUser?.is_superuser
+                        ? [
+                            { label: "Пациент", value: "patient" },
+                            { label: "Врач", value: "doctor" },
+                          ]
+                        : currentUser?.role === "doctor"
+                          ? [{ label: "Пациент", value: "patient" }]
+                          : []
+                    }
+                    size="md"
+                    width="full"
+                    {...register("role")}
+                  />
+                </Field>
+                <Field
+                  invalid={!!errors.gender}
+                  errorText={errors.gender?.message}
+                  label="Пол"
+                >
+                  <Select
+                    placeholder="Выберите пол"
+                    options={[
+                      { label: "Мужчина", value: "male" },
+                      { label: "Женщина", value: "female" },
+                    ]}
+                    size="md"
+                    width="full"
+                    {...register("gender")}
+                  />
+                </Field>
+              </HStack>
+
+              <Field
+                label="Дата рождения"
+                invalid={!!errors.birth_date}
+                errorText={errors.birth_date?.message}
+              >
+                <Input
+                  id="birth_date"
+                  type="text"
+                  placeholder="Дата рождения"
+                  {...register("birth_date", birthDateRules())}
                 />
               </Field>
 
@@ -133,18 +195,18 @@ const AddUser = () => {
                 required
                 invalid={!!errors.password}
                 errorText={errors.password?.message}
-                label="Set Password"
+                label="Пароль"
               >
                 <Input
                   id="password"
                   {...register("password", {
-                    required: "Password is required",
+                    required: "Требуется пароль",
                     minLength: {
                       value: 8,
-                      message: "Password must be at least 8 characters",
+                      message: "Пароль должен содержать не менее 8 символов",
                     },
                   })}
-                  placeholder="Password"
+                  placeholder="Пароль"
                   type="password"
                 />
               </Field>
@@ -153,37 +215,40 @@ const AddUser = () => {
                 required
                 invalid={!!errors.confirm_password}
                 errorText={errors.confirm_password?.message}
-                label="Confirm Password"
+                label="Подтверждение пароля"
               >
                 <Input
                   id="confirm_password"
                   {...register("confirm_password", {
-                    required: "Please confirm your password",
+                    required: "Пожалуйста, подтвердите пароль",
                     validate: (value) =>
-                      value === getValues().password ||
-                      "The passwords do not match",
+                      value === getValues().password || "Пароли не совпадают",
                   })}
-                  placeholder="Password"
+                  placeholder="Подтверждение пароля"
                   type="password"
                 />
               </Field>
             </VStack>
 
             <Flex mt={4} direction="column" gap={4}>
-              <Controller
-                control={control}
-                name="is_superuser"
-                render={({ field }) => (
-                  <Field disabled={field.disabled} colorPalette="teal">
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={({ checked }) => field.onChange(checked)}
-                    >
-                      Is superuser?
-                    </Checkbox>
-                  </Field>
-                )}
-              />
+              {currentUser?.is_superuser && (
+                <Controller
+                  control={control}
+                  name="is_superuser"
+                  render={({ field }) => (
+                    <Field disabled={field.disabled} colorPalette="teal">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={({ checked }) =>
+                          field.onChange(checked)
+                        }
+                      >
+                        Является админом?
+                      </Checkbox>
+                    </Field>
+                  )}
+                />
+              )}
               <Controller
                 control={control}
                 name="is_active"
@@ -193,7 +258,7 @@ const AddUser = () => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is active?
+                      Активный?
                     </Checkbox>
                   </Field>
                 )}
@@ -208,7 +273,7 @@ const AddUser = () => {
                 colorPalette="gray"
                 disabled={isSubmitting}
               >
-                Cancel
+                Отмена
               </Button>
             </DialogActionTrigger>
             <Button
@@ -217,7 +282,7 @@ const AddUser = () => {
               disabled={!isValid}
               loading={isSubmitting}
             >
-              Save
+              Сохранить
             </Button>
           </DialogFooter>
         </form>
