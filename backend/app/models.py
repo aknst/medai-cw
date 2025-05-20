@@ -10,6 +10,11 @@ class UserRole(str, PyEnum):
     doctor = "doctor"
 
 
+class UserGender(str, PyEnum):
+    male = "male"
+    female = "female"
+
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
@@ -19,10 +24,9 @@ class User(SQLModel, table=True):
     is_active: bool = True
     is_superuser: bool = False
     role: UserRole = Field(default=UserRole.patient)
+    gender: UserGender = Field(default=UserGender.male)
     full_name: str | None = Field(default=None, max_length=255)
     birth_date: date | None = None
-
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
     patient_appointments: list["Appointment"] = Relationship(
         back_populates="patient",
@@ -32,19 +36,6 @@ class User(SQLModel, table=True):
         back_populates="doctor",
         sa_relationship_kwargs={"foreign_keys": "[Appointment.doctor_id]"},
     )
-
-
-class Item(SQLModel, table=True):
-    __tablename__ = "items"
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-
-    owner_id: uuid.UUID = Field(
-        foreign_key="users.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
 
 
 class AppointmentStatus(str, PyEnum):
@@ -65,7 +56,7 @@ class Appointment(SQLModel, table=True):
 
     status: AppointmentStatus = Field(default=AppointmentStatus.pending)
 
-    patient_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
+    patient_id: uuid.UUID | None = Field(foreign_key="users.id")
     doctor_id: uuid.UUID | None = Field(foreign_key="users.id", default=None)
 
     patient: User | None = Relationship(

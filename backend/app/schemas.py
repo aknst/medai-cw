@@ -4,7 +4,7 @@ from datetime import date, datetime
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
-from app.models import AppointmentStatus, UserRole
+from app.models import AppointmentStatus, UserGender, UserRole
 
 # ————— User schemas —————
 
@@ -14,6 +14,7 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     role: UserRole = Field(default=UserRole.patient)
+    gender: UserGender = Field(default=UserGender.male)
     full_name: str | None = Field(default=None, max_length=255)
     birth_date: date | None = None
 
@@ -27,10 +28,11 @@ class UserRegister(SQLModel):
     password: str = Field(min_length=8, max_length=40)
     full_name: str | None = Field(default=None, max_length=255)
     birth_date: date | None
+    gender: UserGender = Field(default=UserGender.male)
 
 
 class UserUpdate(UserBase):
-    email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore
+    email: EmailStr | None = Field(default=None, max_length=255)
     password: str | None = Field(default=None, min_length=8, max_length=40)
 
 
@@ -38,6 +40,7 @@ class UserUpdateMe(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
     email: EmailStr | None = Field(default=None, max_length=255)
     birth_date: date | None = None
+    gender: UserGender | None = None
 
 
 class UpdatePassword(SQLModel):
@@ -51,32 +54,6 @@ class UserPublic(UserBase):
 
 class UsersPublic(SQLModel):
     data: list[UserPublic]
-    count: int
-
-
-# ————— Item schemas —————
-
-
-class ItemBase(SQLModel):
-    title: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class ItemUpdate(ItemBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
-
-
-class ItemPublic(ItemBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
     count: int
 
 
@@ -124,11 +101,12 @@ class AppointmentUser(SQLModel):
     full_name: str | None
     email: str
     birth_date: date | None
+    gender: UserGender | None
 
 
 class AppointmentPublic(AppointmentBase):
     id: uuid.UUID
-    patient_id: uuid.UUID
+    patient_id: uuid.UUID | None
     doctor_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
@@ -140,6 +118,20 @@ class AppointmentPublic(AppointmentBase):
 class AppointmentsPublic(SQLModel):
     data: list[AppointmentPublic]
     count: int
+
+
+# ————— Inference schemas —————
+
+
+class InferenceRequest(SQLModel):
+    gender: UserGender
+    age: int
+    complaints: str
+
+
+class InferenceResponse(SQLModel):
+    diagnosis: str
+    recommendations: str
 
 
 # ————— Base schemas —————
