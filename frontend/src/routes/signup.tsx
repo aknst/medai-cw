@@ -22,6 +22,7 @@ export const Route = createFileRoute("/signup")({
     if (isLoggedIn()) {
       throw redirect({
         to: "/",
+        search: {},
       })
     }
   },
