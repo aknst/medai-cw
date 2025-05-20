@@ -10,7 +10,7 @@ from app.services.ml_service import ml_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1/model")
 
 
 class PredictionResponse(BaseModel):
@@ -48,8 +48,7 @@ async def predict_disease(
                 detail="Input text cannot be empty",
             )
 
-        disease = ml_service.predict(text)
-        # logger.info(f"Predicted diagnosis: {disease}")
+        disease = ml_service.predict(text.lower().strip())
 
         recommendation = session.exec(
             select(Recommendation).where(Recommendation.label == disease)
