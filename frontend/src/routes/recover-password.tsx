@@ -55,7 +55,7 @@ function RecoverPassword() {
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    mutation.mutate(data)
+    await mutation.mutateAsync(data)
   }
 
   return (

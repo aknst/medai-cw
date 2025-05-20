@@ -33,7 +33,7 @@ function ResetPassword() {
     handleSubmit,
     getValues,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<NewPasswordForm>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -55,7 +55,7 @@ function ResetPassword() {
   const mutation = useMutation({
     mutationFn: resetPassword,
     onSuccess: () => {
-      showSuccessToast("Password updated successfully.")
+      showSuccessToast("Пароль успешно обновлен.")
       reset()
       navigate({ to: "/login" })
     },
@@ -65,7 +65,7 @@ function ResetPassword() {
   })
 
   const onSubmit: SubmitHandler<NewPasswordForm> = async (data) => {
-    mutation.mutate(data)
+    await mutation.mutateAsync(data)
   }
 
   return (
@@ -80,27 +80,28 @@ function ResetPassword() {
       centerContent
     >
       <Heading size="xl" color="ui.main" textAlign="center" mb={2}>
-        Reset Password
+        Восстановление пароля
       </Heading>
       <Text textAlign="center">
-        Please enter your new password and confirm it to reset your password.
+        Пожалуйста, введите свой новый пароль и подтвердите его, чтобы сбросить
+        пароль.
       </Text>
       <PasswordInput
         startElement={<FiLock />}
         type="new_password"
         errors={errors}
         {...register("new_password", passwordRules())}
-        placeholder="New Password"
+        placeholder="Новый пароль"
       />
       <PasswordInput
         startElement={<FiLock />}
         type="confirm_password"
         errors={errors}
         {...register("confirm_password", confirmPasswordRules(getValues))}
-        placeholder="Confirm Password"
+        placeholder="Подтверждение пароля"
       />
-      <Button variant="solid" type="submit">
-        Reset Password
+      <Button variant="solid" type="submit" loading={isSubmitting}>
+        Восстановить пароль
       </Button>
     </Container>
   )

@@ -5,7 +5,7 @@ import {
   redirect,
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FiLock, FiUser } from "react-icons/fi"
+import { FiCalendar, FiLock, FiMail, FiUser } from "react-icons/fi"
 
 import type { UserRegister } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -13,8 +13,14 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import { confirmPasswordRules, emailPattern, passwordRules } from "@/utils"
+import {
+  birthDateRules,
+  confirmPasswordRules,
+  emailPattern,
+  passwordRules,
+} from "@/utils"
 import Logo from "/assets/images/logo.svg"
+import { Select } from "@/components/ui/select"
 
 export const Route = createFileRoute("/signup")({
   component: SignUp,
@@ -47,6 +53,8 @@ function SignUp() {
       full_name: "",
       password: "",
       confirm_password: "",
+      birth_date: "",
+      gender: "male",
     },
   })
 
@@ -75,6 +83,7 @@ function SignUp() {
             alignSelf="center"
             mb={4}
           />
+
           <Field
             invalid={!!errors.full_name}
             errorText={errors.full_name?.message}
@@ -92,8 +101,35 @@ function SignUp() {
             </InputGroup>
           </Field>
 
+          <Field invalid={!!errors.gender} errorText={errors.gender?.message}>
+            <Select
+              placeholder="Выберите пол"
+              options={[
+                { label: "♂  Мужчина", value: "male" },
+                { label: "♀  Женщина", value: "female" },
+              ]}
+              size="md"
+              width="full"
+              {...register("gender")}
+            />
+          </Field>
+
+          <Field
+            invalid={!!errors.birth_date}
+            errorText={errors.birth_date?.message}
+          >
+            <InputGroup w="100%" startElement={<FiCalendar />}>
+              <Input
+                id="birth_date"
+                type="text"
+                placeholder="Дата рождения"
+                {...register("birth_date", birthDateRules())}
+              />
+            </InputGroup>
+          </Field>
+
           <Field invalid={!!errors.email} errorText={errors.email?.message}>
-            <InputGroup w="100%" startElement={<FiUser />}>
+            <InputGroup w="100%" startElement={<FiMail />}>
               <Input
                 id="email"
                 {...register("email", {
