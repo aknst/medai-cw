@@ -16,14 +16,9 @@ import UserMenu from "./UserMenu"
 import { useColorModeValue } from "../ui/color-mode"
 
 import { FaBars, FaTimes } from "react-icons/fa"
-import { FiBriefcase } from "react-icons/fi"
+import { FiUserPlus, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
-
-const navItems = [
-  // { icon: FiHome, title: "Dashboard", path: "/" },
-  { icon: FiBriefcase, title: "Items", path: "/items" },
-  // { icon: FiSettings, title: "User Settings", path: "/settings" },
-]
+import useAuth from "@/hooks/useAuth"
 
 interface NavItem {
   icon: IconType
@@ -55,6 +50,28 @@ const NavLink = ({ link }: { link: NavItem }) => {
 }
 
 function Navbar() {
+  const { user: currentUser } = useAuth()
+  const navItems = [
+    ...(currentUser?.is_superuser
+      ? [
+          {
+            icon: FiUsers,
+            title: "Управление пользователями",
+            path: "/users",
+          },
+        ]
+      : []),
+    ...(currentUser?.role === "doctor"
+      ? [
+          {
+            icon: FiUserPlus,
+            title: "Управление пациентами",
+            path: "/users",
+          },
+        ]
+      : []),
+  ]
+
   const { open: isOpen, onOpen, onClose } = useDisclosure()
 
   return (

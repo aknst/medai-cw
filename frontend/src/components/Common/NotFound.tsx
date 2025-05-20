@@ -35,17 +35,17 @@ const NotFound = () => {
           textAlign="center"
           zIndex={1}
         >
-          The page you are looking for was not found.
+          Страница, которую вы ищете, не была найдена.
         </Text>
         <Center zIndex={1}>
-          <Link to="/">
+          <Link to="/" search={{ page: 1 }}>
             <Button
               variant="solid"
               colorScheme="teal"
               mt={4}
               alignSelf="center"
             >
-              Go Back
+              Вернуться на главную
             </Button>
           </Link>
         </Center>

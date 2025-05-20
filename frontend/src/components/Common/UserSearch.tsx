@@ -18,7 +18,7 @@ interface UserSearchProps {
   onSelect?: (id: string) => void
 }
 
-const PER_PAGE = 10
+const PER_PAGE = 5
 
 function getUsersQueryOptions({ search }: { search: string }) {
   return {
@@ -43,7 +43,8 @@ export const UserSearch = ({ onSelect }: UserSearchProps) => {
 
   const { collection, set } = useListCollection<UserPublic>({
     initialItems: data || [],
-    itemToString: (item) => item.email,
+    itemToString: (item) =>
+      item?.full_name?.trim() ? item.full_name : (item?.email ?? "N/A"),
     itemToValue: (item) => item.id.toString(),
   })
 
@@ -91,9 +92,17 @@ export const UserSearch = ({ onSelect }: UserSearchProps) => {
                 collection.items.map((user) => (
                   <Combobox.Item key={user.id} item={user}>
                     <Stack gap={0}>
-                      <Span textStyle="sm" fontWeight="medium">
-                        {user.full_name}
-                      </Span>
+                      <HStack gap={2}>
+                        <Span textStyle="sm" fontWeight="medium">
+                          {user.full_name}
+                        </Span>
+                        {user.role === "patient" && (
+                          <Span textStyle="xs" color="fg.muted">
+                            {user.birth_date}
+                          </Span>
+                        )}
+                      </HStack>
+
                       <Span textStyle="xs" color="fg.muted">
                         {user.email}
                       </Span>
