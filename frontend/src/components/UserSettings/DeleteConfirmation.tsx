@@ -59,7 +59,7 @@ const DeleteConfirmation = () => {
       >
         <DialogTrigger asChild>
           <Button variant="solid" colorPalette="red" mt={4}>
-            Delete
+            Удалить
           </Button>
         </DialogTrigger>
 
@@ -67,14 +67,14 @@ const DeleteConfirmation = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogCloseTrigger />
             <DialogHeader>
-              <DialogTitle>Confirmation Required</DialogTitle>
+              <DialogTitle>Требуется подтверждение</DialogTitle>
             </DialogHeader>
             <DialogBody>
               <Text mb={4}>
-                All your account data will be{" "}
-                <strong>permanently deleted.</strong> If you are sure, please
-                click <strong>"Confirm"</strong> to proceed. This action cannot
-                be undone.
+                Все данные вашей учетной записи будут{" "}
+                <strong>безвозвратно удалены</strong>. Если вы уверены, нажмите{" "}
+                <strong>"Подтвердить"</strong>, чтобы продолжить. Эту операцию
+                нельзя отменить.
               </Text>
             </DialogBody>
 
@@ -86,7 +86,7 @@ const DeleteConfirmation = () => {
                     colorPalette="gray"
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    Отмена
                   </Button>
                 </DialogActionTrigger>
                 <Button
@@ -95,7 +95,7 @@ const DeleteConfirmation = () => {
                   type="submit"
                   loading={isSubmitting}
                 >
-                  Delete
+                  Удалить
                 </Button>
               </ButtonGroup>
             </DialogFooter>

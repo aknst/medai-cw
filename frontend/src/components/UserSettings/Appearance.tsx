@@ -10,18 +10,18 @@ const Appearance = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          Appearance
+          Визуальные настройки сайта
         </Heading>
 
         <RadioGroup
-          onValueChange={(e) => setTheme(e.value)}
+          onValueChange={(e) => setTheme(e?.value ?? "system")}
           value={theme}
           colorPalette="teal"
         >
           <Stack>
-            <Radio value="system">System</Radio>
-            <Radio value="light">Light Mode</Radio>
-            <Radio value="dark">Dark Mode</Radio>
+            <Radio value="system">Системная тема</Radio>
+            <Radio value="light">Светлая тема</Radio>
+            <Radio value="dark">Тёмная тема</Radio>
           </Stack>
         </RadioGroup>
       </Container>
