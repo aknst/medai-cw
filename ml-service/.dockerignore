@@ -8,3 +8,9 @@ htmlcov
 .venv
 bert
 *.csv
+**/bert/
+/bert/
+/bert
+.vscode
+*.csv
+**/*.csv

@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 from fastapi import APIRouter, HTTPException
 
@@ -17,6 +19,8 @@ async def run_inference(payload: InferenceRequest) -> InferenceResponse:
     пересылает его в ML‑микросервис и возвращает результат.
     """
     ml_url = settings.ML_HOST + "/api/v1/model/predict"
+
+    logging.info(ml_url)
 
     patient_gender = "Мужчина" if payload.gender == "male" else "Женщина"
 
