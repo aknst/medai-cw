@@ -17,7 +17,7 @@ services:
       timeout: 10s
       start_period: 30s
     ports:
-      - "5432:5432"
+      - "5444:5432"
 
   # ----------------------------------------
   # ML Service
