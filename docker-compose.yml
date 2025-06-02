@@ -29,6 +29,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - ML_HOST=${ML_HOST}
+    ports:
+      - "3454:8000"
     volumes:
     - ./ml-service/app/data:/app/app/data:ro
 
