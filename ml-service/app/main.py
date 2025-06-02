@@ -46,10 +46,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 
 
 app = FastAPI(
-    title="MedAI ML Service API",
-    description="API для определения диагноза и рекомендаций",
-    lifespan=lifespan,
-    version="0.0.1",
+    lifespan=lifespan, version="0.0.1", docs_url=None, redoc_url=None, openapi_url=None
 )
 
 app.include_router(inference.router)
@@ -60,6 +57,6 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/docs")
+# @app.get("/")
+# async def root():
+#     return RedirectResponse(url="/docs")
